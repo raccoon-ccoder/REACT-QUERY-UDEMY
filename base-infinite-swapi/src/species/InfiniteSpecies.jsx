@@ -21,7 +21,7 @@ export function InfiniteSpecies() {
     "sw-species",
     ({ pageParam = initialUrl }) => fetchUrl(pageParam),
     {
-      getNextPageParam: (lastPage) => lastPage.next || undefined,
+      getNextPageParam: (lastPage, allPage) => lastPage.next || undefined,
     }
   );
 
