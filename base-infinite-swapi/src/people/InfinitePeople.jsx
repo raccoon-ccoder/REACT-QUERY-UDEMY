@@ -9,7 +9,15 @@ const fetchUrl = async (url) => {
 };
 
 export function InfinitePeople() {
-  const { data, fetchNextPage, hasNextPage } = useInfiniteQuery(
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isLoading,
+    isError,
+    error,
+    isFetching,
+  } = useInfiniteQuery(
     "sw-people",
     ({ pageParam = initialUrl }) => fetchUrl(pageParam),
     {
@@ -17,20 +25,27 @@ export function InfinitePeople() {
       // lastPage는 마지막에 실행된 쿼리함수 결과값으로 star wars api data 결과값에는 다음 페이지로 이동할 수 있는 url이 담긴 next property가 있기에 해당 프로퍼티를 전달
     }
   );
+
+  if (isLoading) return <div className="loading">Loading...</div>;
+
+  if (isError) return <div>Error : {error.toString()}</div>;
   return (
-    <InfiniteScroll loadMore={fetchNextPage} hasMore={hasNextPage}>
-      {data.pages.map((pageData) => {
-        return pageData.results.map((person) => {
-          return (
-            <Person
-              key={person.name}
-              name={person.name}
-              hairColor={person.hair_color}
-              eyeColor={person.eye_color}
-            />
-          );
-        });
-      })}
-    </InfiniteScroll>
+    <>
+      {isFetching && <div className="loading">Loading...</div>}
+      <InfiniteScroll loadMore={fetchNextPage} hasMore={hasNextPage}>
+        {data.pages.map((pageData) => {
+          return pageData.results.map((person) => {
+            return (
+              <Person
+                key={person.name}
+                name={person.name}
+                hairColor={person.hair_color}
+                eyeColor={person.eye_color}
+              />
+            );
+          });
+        })}
+      </InfiniteScroll>
+    </>
   );
 }
