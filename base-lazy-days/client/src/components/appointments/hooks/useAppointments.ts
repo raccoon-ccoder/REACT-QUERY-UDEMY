@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { useQuery } from '@chakra-ui/react';
 import dayjs from 'dayjs';
 import { Dispatch, SetStateAction, useState } from 'react';
 
@@ -32,8 +33,8 @@ interface UseAppointments {
 //     1a. provide a way to update state
 //   2. return the appointments for that particular monthYear
 //     2a. return in AppointmentDateMap format (appointment arrays indexed by day of month)
-//     2b. prefetch the appointments for adjacent monthYears
-//   3. track the state of the filter (all appointments / available appointments)
+//     2b. prefetch the appointments for adjacent monthYears (이전달, 다음달 데이터 prefetch)
+//   3. track the state of the filter (all appointments / available appointments) //예약된 날짜, 안된 날짜 필터 state
 //     3a. return the only the applicable appointments for the current monthYear
 export function useAppointments(): UseAppointments {
   /** ****************** START 1: monthYear state *********************** */
@@ -63,14 +64,17 @@ export function useAppointments(): UseAppointments {
   /** ****************** START 3: useQuery  ***************************** */
   // useQuery call for appointments for the current monthYear
 
-  // TODO: update with useQuery!
   // Notes:
   //    1. appointments is an AppointmentDateMap (object with days of month
   //       as properties, and arrays of appointments for that day as values)
   //
   //    2. The getAppointments query function needs monthYear.year and
   //       monthYear.month
-  const appointments = {};
+  const fallback = [];
+  const { data: appointments = fallback } = useQuery(
+    queryKeys.appointments,
+    () => getAppointments(monthYear.year, monthYear.month),
+  );
 
   /** ****************** END 3: useQuery  ******************************* */
 
