@@ -18,5 +18,7 @@ export function useTreatments(): Treatment[] {
 
 export function usePrefetchTreatments(): void {
   const queryClient = useQueryClient();
-  queryClient.prefetchQuery(queryKeys.treatments, getTreatments);
+  queryClient.prefetchQuery(queryKeys.treatments, getTreatments, {
+    staleTime: 1000 * 10,
+  });
 }

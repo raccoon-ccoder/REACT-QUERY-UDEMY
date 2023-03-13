@@ -1,7 +1,14 @@
 // @ts-nocheck
-import { useQuery } from '@chakra-ui/react';
+
 import dayjs from 'dayjs';
-import { Dispatch, SetStateAction, useState } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 
 import { axiosInstance } from '../../../axiosInstance';
 import { queryKeys } from '../../../react-query/constants';
@@ -60,6 +67,10 @@ export function useAppointments(): UseAppointments {
   //   appointments that the logged-in user has reserved (in white)
   const { user } = useUser();
 
+  const selectedFn = useCallback(
+    (data) => getAvailableAppointments(data, user),
+    [user],
+  );
   /** ****************** END 2: filter appointments  ******************** */
   /** ****************** START 3: useQuery  ***************************** */
   // useQuery call for appointments for the current monthYear
@@ -72,11 +83,22 @@ export function useAppointments(): UseAppointments {
   //       monthYear.month
   const fallback = [];
   const { data: appointments = fallback } = useQuery(
-    queryKeys.appointments,
+    [queryKeys.appointments, monthYear.year, monthYear.month],
     () => getAppointments(monthYear.year, monthYear.month),
+    {
+      select: showAll ? undefined : selectedFn,
+    },
   );
 
   /** ****************** END 3: useQuery  ******************************* */
-
+  // prefetch next month when monthYear changes
+  const queryClinet = useQueryClient();
+  useEffect(() => {
+    const nextMonth = getNewMonthYear(monthYear, +1);
+    queryClinet.prefetchQuery(
+      [queryKeys.appointments, monthYear.year, nextMonth.month],
+      () => getAppointments(nextMonth.year, nextMonth.month),
+    );
+  }, [queryClinet, monthYear]);
   return { appointments, monthYear, updateMonthYear, showAll, setShowAll };
 }

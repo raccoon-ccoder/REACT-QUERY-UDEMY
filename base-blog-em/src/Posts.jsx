@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "react-query";
 
 import { PostDetail } from "./PostDetail";
+
 const maxPostPage = 10;
 
 async function fetchPosts(pageNum) {
@@ -23,9 +24,12 @@ export function Posts() {
   useEffect(() => {
     if (currentPage < maxPostPage) {
       const nextPage = currentPage + 1;
-      queryClient.prefetchQuery(["posts", nextPage], () =>
-        // (1)
-        fetchPosts(nextPage)
+      queryClient.prefetchQuery(
+        ["posts", nextPage],
+        () =>
+          // (1)
+          fetchPosts(nextPage)
+        // { staleTime: 0, cacheTime: 0 } 일 경우 캐시된 데이터 없으므로 로딩 인디케이터 생성됨
       );
     }
   }, [currentPage, queryClient]);
@@ -35,8 +39,7 @@ export function Posts() {
     ["posts", currentPage],
     () => fetchPosts(currentPage),
     {
-      staleTime: 1000 * 2,
-      keepPreviousData: true,
+      // keepPreviousData: true,
     }
   );
   if (isLoading) return <h3>Loading ...</h3>;
